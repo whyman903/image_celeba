@@ -1,0 +1,33 @@
+# macOS system files
+.DS_Store
+
+
+# Project-specific folders
+errors/
+evaluation_results/
+checkpoints/
+
+# Image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+*.svg
+*.ico
+
+# Image files in all subdirectories
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.gif
+**/*.bmp
+**/*.tiff
+**/*.webp
+**/*.svg
+**/*.ico
+
+# Zip files
+*.zip
