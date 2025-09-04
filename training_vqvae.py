@@ -15,26 +15,27 @@ def main(args):
     #Model, optimizer, loss
     model = VQVAE(num_codebook=args.num_codebook, dim=args.dim).to(device)
     model.train()
-    optimizer = optim.AdamW(
-        model.parameters(), lr=args.lr, betas=(0.9, 0.95)
-    )
-    recon_loss = nn.MSELoss()
+    optimizer = optim.AdamW(model.parameters(), lr=args.lr, betas=(0.9, 0.999))
+    recon_loss = nn.L1Loss()
 
     transform = transforms.Compose([
-        transforms.CenterCrop(128),
         transforms.Resize(128),
+        transforms.CenterCrop(128),
         transforms.ToTensor(),
-        transforms.Normalize([0.5] * 3, [0.5] * 3)
+        transforms.Normalize([0.5]*3, [0.5]*3),
     ])
     dataset = datasets.CelebA(
         args.data_root, split='train', download=False, transform=transform
     )
+
+    pin = torch.cuda.is_available()
+
     loader = DataLoader(
         dataset,
         batch_size=args.batch,
         shuffle=True,
         num_workers=args.num_workers,
-        pin_memory=True
+        pin_memory=pin
     )
 
     loader_iter = iter(loader)
@@ -48,8 +49,8 @@ def main(args):
             x, _ = next(loader_iter)
 
         x = x.to(device)
-        recon, commit = model(x)
-        loss = recon_loss(recon, x) + commit
+        recon, vq_loss, _ = model(x)
+        loss = recon_loss(recon, x) + vq_loss
 
         optimizer.zero_grad()
         loss.backward()
